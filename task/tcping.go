@@ -129,19 +129,16 @@ func (p *Ping) appendIPData(data *utils.PingData) {
 // handle tcping
 func (p *Ping) tcpingHandler(ip *net.IPAddr) {
 	recv, totalDlay := p.checkConnection(ip)
-	nowAble := len(p.csv)
 	if recv != 0 {
-		nowAble++
+		data := &utils.PingData{
+			IP:       ip,
+			Sended:   PingTimes,
+			Received: recv,
+			Delay:    totalDlay / time.Duration(recv),
+		}
+		p.appendIPData(data)
 	}
+	// TODO: 多协程并发下，统计不正确
+	nowAble := p.csv.FilterDelay().FilterLossRate().Len()
 	p.bar.Grow(1, strconv.Itoa(nowAble))
-	if recv == 0 {
-		return
-	}
-	data := &utils.PingData{
-		IP:       ip,
-		Sended:   PingTimes,
-		Received: recv,
-		Delay:    totalDlay / time.Duration(recv),
-	}
-	p.appendIPData(data)
 }

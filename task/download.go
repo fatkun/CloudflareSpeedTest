@@ -72,13 +72,16 @@ func TestDownloadSpeed(ipSet utils.PingDelaySet) (speedSet utils.DownloadSpeedSe
 	for i := 0; i < bar_a; i++ {
 		bar_b += " "
 	}
-	bar := utils.NewBar(TestCount, bar_b, "")
+	bar := utils.NewBar(TestCount, "已测试:", "")
+	testedCount := 0
 	for i := 0; i < testNum; i++ {
+		testedCount += 1
 		speed := downloadHandler(ipSet[i].IP)
 		ipSet[i].DownloadSpeed = speed
 		// 在每个 IP 下载测速后，以 [下载速度下限] 条件过滤结果
+		bar.Grow(0, fmt.Sprintf("%d", testedCount))
 		if speed >= MinSpeed*1024*1024 {
-			bar.Grow(1, "")
+			bar.Grow(1, fmt.Sprintf("%d", testedCount))
 			speedSet = append(speedSet, ipSet[i]) // 高于下载速度下限时，添加到新数组中
 			if len(speedSet) == TestCount {       // 凑够满足条件的 IP 时（下载测速数量 -dn），就跳出循环
 				break
@@ -126,7 +129,7 @@ func downloadHandler(ip *net.IPAddr) float64 {
 		return 0.0
 	}
 
-	req.Header.Set("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/98.0.4758.80 Safari/537.36")
+	req.Header.Set("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36")
 
 	response, err := client.Do(req)
 	if err != nil {
